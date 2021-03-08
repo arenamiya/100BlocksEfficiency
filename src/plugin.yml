@@ -1,0 +1,5 @@
+name: 100BlocksEfficiency
+version: 1.0
+author: andronauts
+main: me.andronauts.block100efficiency.Main
+description: Minecraft, but every 100 BLOCKS you mine, you UPGRADE your Efficiency enchantment...
