@@ -2,71 +2,55 @@ package me.andronauts.block100efficiency.listeners;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import me.andronauts.block100efficiency.Main;
 
 public class Mine implements Listener {
 	
-	Map<String, Integer> blockCount = new HashMap<String, Integer>();
+	Map<UUID, Integer> blockCount = new HashMap<UUID, Integer>();
 	
 	public Mine(Main plugin) {
 		plugin.getServer().getPluginManager().registerEvents(this, plugin);
 	}
 	
-	private boolean isTool(ItemStack i) {
-		
-		String item = i.getType().toString();
-		if(item.contains("SWORD") || item.contains("AXE") || item.contains("SHEARS") ||
-				item.contains("SHOVEL") || item.contains("HOE")) {
-			return true;
-		} else if (i.getType().equals(Material.WOODEN_SHOVEL) ||
-				i.getType().equals(Material.STONE_SHOVEL) || 
-				i.getType().equals(Material.IRON_SHOVEL) || 
-				i.getType().equals(Material.GOLDEN_SHOVEL) ||
-				i.getType().equals(Material.DIAMOND_SHOVEL) ||
-				i.getType().equals(Material.NETHERITE_SHOVEL) ||
-				i.getType().equals(Material.NETHERITE_AXE) ||
-				i.getType().equals(Material.NETHERITE_PICKAXE) ||
-				i.getType().equals(Material.NETHERITE_SWORD) ||
-				i.getType().equals(Material.NETHERITE_HOE)) {
-			return true;
-		} else {
-			return false;
-		}
-		
-	}
-	
 	@EventHandler
 	public void hundredBlock(BlockBreakEvent event) {
 		
-		String username = event.getPlayer().getDisplayName();
+		Player p = event.getPlayer();
+		UUID uuid = p.getUniqueId();
+		ItemStack item = p.getInventory().getItemInMainHand();
 		
-		if(!blockCount.containsKey(username)) {
-			blockCount.put(username, 1);
+		if(!blockCount.containsKey(uuid)) {
+			blockCount.put(uuid, 1);
 		} else {
-			blockCount.replace(username, blockCount.get(username)+1);
+			blockCount.replace(uuid, blockCount.get(uuid)+1);
 		}
 		
-		if(blockCount.get(username) % 100 == 0) {
+		if(blockCount.get(uuid) % 100 == 0) {
 			
-			Bukkit.broadcastMessage(username + " has mined: " + blockCount.get(username) + " blocks.");
+			Bukkit.broadcastMessage(p.getDisplayName() + " has mined: " + blockCount.get(uuid) + " blocks.");
 			
-			Player p = event.getPlayer();
+			ItemMeta meta = item.getItemMeta();
+			int eLvl = 0;
 			
-			for(ItemStack i : p.getInventory().getContents()) {
-				if(isTool(i)) 
-					i.addUnsafeEnchantment(Enchantment.DIG_SPEED, i.getEnchantmentLevel(Enchantment.DIG_SPEED)+1);
-			}
+			if(item.containsEnchantment(Enchantment.DIG_SPEED)) 
+				eLvl = item.getEnchantmentLevel(Enchantment.DIG_SPEED) + 1;
+			else 
+				eLvl = 1;
 			
+			meta.addEnchant(Enchantment.DIG_SPEED, eLvl, true);
+			item.setItemMeta(meta);
+				
 		} 
 	}
 
